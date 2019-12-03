@@ -5,8 +5,9 @@
 
 /* 팀원 상세정보 */
 typedef struct{
+    int num;
     char name[64];
-    int hit_rate;
+    double hit_rate;
 }TEAM_DATA;
 
 /* 팀 구조체    */
@@ -17,8 +18,8 @@ typedef struct{
 
 /* 데이터 입력, 출력 */
 int init_menu();
-void insert_team(TEAM * []);
-void print_team(TEAM * []);
+void insert_team(TEAM *, int);
+void print_team(TEAM *, int);
 /********************/
 
 void init_playing();
@@ -31,20 +32,24 @@ void main(){
     int menu_result;
     srand(time(NULL));
 
-    TEAM * team[2];
+    //2단계, 현재는 2팀뿐이므로 2개만, 나중에 malloc으로 교체해야 할지도..
+    TEAM team[2];
 
-    //memset(team, 0x00, sizeof(TEAM));
-    printf("!!!");
+    while(1)
+    {
     menu_result = init_menu();
 
-    switch(menu_result)
-    {
-        case 1:
-            insert_team(team);
-            break;
-        case 2:
-            print_team(team);
-            break;
+        switch(menu_result)
+        {
+            case 1:
+                insert_team(team, 2);
+                break;
+            case 2:
+                print_team(team, 2);
+                break;
+            case 3:
+                exit(0);
+        }
     }
 
     //init_playing();
@@ -59,25 +64,69 @@ int init_menu(){
     printf("신나는 야구시합\n");
     printf("1. 데이터 입력\n");
     printf("2. 데이터 출력\n");
+    printf("3. 종료\n");
 
     printf("메뉴선택 (1 - 2)");
     scanf("%d", &sel);
+    printf("\n");
     return sel;
 }
 
-void insert_team(TEAM * team[])
+void insert_team(TEAM * team, int len)
 {
-    int len = sizeof(&team);
-    printf("TEAM len : %d\n", len);
+    memset(team, 0x00, sizeof(TEAM));
+    int data_size = sizeof(team[0].data)/sizeof(TEAM_DATA);
+    char t_name[128];
+    char name[64];
+    char hit_rate[5+1];
+    int k=0;
+
     for(int i=0; i<len; i++)
     {
-        break;
+        memset(t_name, 0x00, sizeof(t_name));
+        getchar();
+        printf("%d팀의 이름을 입력하세요> ", i+1);
+        fgets(t_name, sizeof(t_name), stdin);
+        //scanf(" %s", t_name);
+        t_name[strlen(t_name)-1] = '\0';
+        memcpy(team[i].teamName, t_name, strlen(t_name));
+        for(int j=0; j < 3; j++)
+        {
+            memset(name, 0x00, sizeof(name));
+            memset(hit_rate, 0x00, sizeof(hit_rate));
+            printf("%d번 타자 정보 입력>\n", j+1);
+            team[i].data[j].num = j+1;
+            
+            printf("1) 이름 : ");
+            scanf(" %s", name);
+            memcpy(team[i].data[j].name, name, strlen(name));
+
+            printf("2) 타율 : ");
+            scanf(" %s", hit_rate);
+            if(atof(hit_rate) < 0.1 || atof(hit_rate) > 0.5 || strlen(hit_rate) < 5)
+            {
+                printf("타율은 0.1~0.5 사이이며 소수 세째 자리까지 입력하세요\n");
+                j--;
+                continue;
+            } else {
+                team[i].data[j].hit_rate = atof(hit_rate);
+            }
+        }
     }
+    printf("\n팀 데이터 입력이 완료되었습니다.\n");
 }
 
-void print_team(TEAM * team[])
+void print_team(TEAM * team, int len)
 {
-
+    int data_size = sizeof(team[0].data)/sizeof(TEAM_DATA);
+    for(int i=0; i<len; i++)
+    {
+        printf("\n%.*s 팀 정보\n", strlen(team[i].teamName), team[i].teamName);
+        for(int j=0; j<data_size; j++)
+        {
+            printf("%d번 %s, %.3f\n", team[i].data[j].num, team[i].data[j].name, team[i].data[j].hit_rate);
+        }
+    }
 }
 
 /****************************************/
