@@ -22,9 +22,8 @@ void insert_team(TEAM *, int);
 void print_team(TEAM *, int);
 /********************/
 
-void init_playing();
-void start_playing();
-int playing();
+void init_playing(TEAM *, int);
+int playing(TEAM *, int tnum);
 void clear(int *, int *);
 void next_alarm(int);
 
@@ -48,6 +47,9 @@ void main(){
                 print_team(team, 2);
                 break;
             case 3:
+                init_playing(team, 2);
+                break;
+            case 4:
                 exit(0);
         }
     }
@@ -64,7 +66,8 @@ int init_menu(){
     printf("신나는 야구시합\n");
     printf("1. 데이터 입력\n");
     printf("2. 데이터 출력\n");
-    printf("3. 종료\n");
+    printf("3. 시합 시작\n");
+    printf("4. 종료\n");
 
     printf("메뉴선택 (1 - 2)");
     scanf("%d", &sel);
@@ -84,10 +87,10 @@ void insert_team(TEAM * team, int len)
     for(int i=0; i<len; i++)
     {
         memset(t_name, 0x00, sizeof(t_name));
-        getchar();
+        getchar(); 
         printf("%d팀의 이름을 입력하세요> ", i+1);
         fgets(t_name, sizeof(t_name), stdin);
-        //scanf(" %s", t_name);
+        
         t_name[strlen(t_name)-1] = '\0';
         memcpy(team[i].teamName, t_name, strlen(t_name));
         for(int j=0; j < 3; j++)
@@ -132,20 +135,32 @@ void print_team(TEAM * team, int len)
 /****************************************/
 /* 경기진행                              */
 /****************************************/ 
-void init_playing(){
+void init_playing(TEAM * team, int len){
     int result;
     
-    int strike = 0;
-    int ball = 0;
-    int out = 0;
-    int hit = 0;
+    int strike = 0, ball = 0, out = 0, hit = 0;
+    int c1 = 1, c2 = 0, flag = 0, s1, s2;
 
-    int flag = 0;
-
-    start_playing();
+    printf("%.*s VS %.*s의 시합을 시작합니다.\n", strlen(team[0].teamName), team[0].teamName, strlen(team[1].teamName), team[1].teamName);
+    
     while(1)
     {
-        result = playing();
+        //6회 종료후 7회일때 동점일 경우 무승부처리
+        if(c1 == 7 && s1 == s2)
+        {
+            printf("경기 종료\n");
+            break;
+        }
+
+        //c2 == 0 : 초, c2 == 1: 말
+        if(c2 == 0){
+            printf("%d초 %.*s 공격", c1, strlen(team[c2].teamName), team[c2].teamName);
+        } else {
+            printf("%d말 %.*s 공격", c1, strlen(team[c2].teamName), team[c2].teamName);
+            c1++; //X회
+        }
+
+        result = playing(team, c2);
 
         switch(result)
         {
@@ -192,27 +207,16 @@ void init_playing(){
             break;
         }
         
+        c2 = ~c2;
     }
-    system("pause");
-}
-
-/****************************************/
-/* 초기화                               */
-/****************************************/ 
-void start_playing(){
-    printf("신나는 야구시합!\n");
-    printf("첫 번째 타자가 타석에 입장했습니다.\n\n");
 }
 
 /****************************************/
 /* 0: 스트라이크, 1:볼, 2: 아웃, 3: 안타  */
 /****************************************/ 
-int playing()
+int playing(TEAM * team, int tnum)
 {
-    int random;
-    random = rand() % 4; 
-
-    return random;
+    
 }
 
 /****************************************/
