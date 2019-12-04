@@ -76,7 +76,9 @@ int init_menu(){
     return sel;
 }
 
-/* 팀정보 삽입 */
+/****************************************/
+/* 팀정보 삽입                           */
+/****************************************/ 
 void insert_team(TEAM * team, int len)
 {
     int data_size = sizeof(team[0].data)/sizeof(TEAM_DATA);
@@ -94,7 +96,7 @@ void insert_team(TEAM * team, int len)
         
         t_name[strlen(t_name)-1] = '\0';
         memcpy(team[i].teamName, t_name, strlen(t_name));
-        for(int j=0; j < 3; j++)
+        for(int j=0; j < 9; j++)
         {
             memset(name, 0x00, sizeof(name));
             memset(hit_rate, 0x00, sizeof(hit_rate));
@@ -120,7 +122,9 @@ void insert_team(TEAM * team, int len)
     printf("\n팀 데이터 입력이 완료되었습니다.\n");
 }
 
-/* 팀 정보 출력*/
+/****************************************/
+/* 팀정보 출                            */
+/***************************************/ 
 void print_team(TEAM * team, int len)
 {
     int data_size = sizeof(team[0].data)/sizeof(TEAM_DATA);
@@ -141,7 +145,7 @@ void init_playing(TEAM * team, int len){
     char result;
     
     int strike = 0, ball = 0, out = 0, hit = 0;
-    int c1 = 1, c2 = 0; //경기회수, 팀번호(0,1), 
+    int c1 = 0, c2 = 1; //경기회수, 팀번호(0,1), 
     int ply = 0;        //선수번호
     int scr[2] = {0, }; //점수
 
@@ -150,19 +154,21 @@ void init_playing(TEAM * team, int len){
     while(1)
     {
         //6회 종료후 게임 종료.
-        if(c1 == 7)
+        if(out==3 || c1 == 0)
         {
-            printf("경기 종료\n");
-            break;
-        }
-        //c2 == 0 : 초(1팀), c2 == 1: 말(2팀)
-        if(out == 3){
-            c2 = ~c2;
-            if(c2 == 0){
-                printf("%d초 %.*s 공격", c1, strlen(team[c2].teamName), team[c2].teamName);
+             c1++; //X회
+            //c2 == 0 : 초(1팀), c2 == 1: 말(2팀)
+            if(c1 == 7)
+            {
+                printf("경기 종료\n");
+                break;
+            }
+            if(c2 == 1){
+                c2 = 0;
+                printf("%d회 초 %.*s 공격\n", c1, strlen(team[c2].teamName), team[c2].teamName);
             } else {
-                printf("%d말 %.*s 공격", c1, strlen(team[c2].teamName), team[c2].teamName);
-                c1++; //X회
+                c2 = 1;
+                printf("%d회 말 %.*s 공격\n", c1, strlen(team[c2].teamName), team[c2].teamName);
             }
             clear(&strike, &ball); clear(&hit, &ply);
             out = 0;
@@ -202,12 +208,13 @@ void init_playing(TEAM * team, int len){
             case 'h':
                 printf("안타!\n");
                 hit++;
+                ply++;
                 clear(&strike, &ball);
                 break;
         }
 
         printf("%dS %dB %dO %dH\n\n", strike, ball, out, hit);
-        if(ply > 3)
+        if(ply > 8)
             ply = 0;
 
         score(scr, c2, hit);
@@ -215,16 +222,17 @@ void init_playing(TEAM * team, int len){
 
      printf("%.*s VS %.*s\n", strlen(team[0].teamName), team[0].teamName, strlen(team[1].teamName), team[1].teamName);
      printf("%d : %d\n Thank you!\n", scr[0], scr[1]);
-     exit(0);
 }
 
-/*************************************************/
-/* 0: 스트라이크, 1:볼, 2: 아웃, 3: 안타 확률계산
+/****************************************************/
+/*0: 스트라이크, 1:볼, 2: 아웃, 3: 안타 확률계산
 -안타: h, 0.1 < h < 0.5
 -스트라이크: (1 - h) / 2 - 0.05
 -볼: (1 - h) / 2 - 0.05
 -아웃: 0.1
-/************************************************/ 
+*input  : struct TEAM, 팀 번호, n번째 타자
+*output : o(아웃), h(안타), s(스트라이크), b(볼) 중 1 */
+/****************************************************/ 
 char playing(TEAM * team, int tnum, int pnum)
 {
     double hit = team[tnum].data[pnum].hit_rate;
@@ -267,7 +275,7 @@ char playing(TEAM * team, int tnum, int pnum)
 }
 
 /****************************************/
-/* 0으로 초기화             */
+/* 들어오는 매개변수를 0으로 초기화       */
 /****************************************/ 
 void clear(int * num1, int * num2)
 {
@@ -275,6 +283,10 @@ void clear(int * num1, int * num2)
     *num2 = 0;
 }
 
+/****************************************/
+/* 점수 관리                             */
+/* input : 점수 배열, 팀 넘버, 안타개수
+/****************************************/ 
 void score(int * scr, int tnum, int hit)
 {
     if(hit >= 4)
